@@ -1,6 +1,6 @@
 # Navegação Autônoma em Labirinto (ROS 2)
 
-Solução do **Desafio de Navegação Autônoma** (Inteli, Módulo 8): um robô dentro de um labirinto precisa chegar até um alvo usando algoritmos de grafos, no simulador **Culling Games** do professor Rodrigo Nicola ([rmnicola/culling_games](https://github.com/rmnicola/culling_games)).
+Solução do **Desafio de Navegação Autônoma**: um robô dentro de um labirinto precisa chegar até um alvo usando algoritmos de grafos, no simulador **Culling Games** ([rmnicola/culling_games](https://github.com/rmnicola/culling_games)).
 
 O desafio tem duas partes:
 
