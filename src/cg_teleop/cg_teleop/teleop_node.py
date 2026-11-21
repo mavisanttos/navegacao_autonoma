@@ -7,24 +7,17 @@ import termios
 import tty
 
 msg = """
-Reading from the keyboard and Publishing to /move_command!
+Lendo o teclado e chamando o servico /move_command!
 ---------------------------
-Moving around:
-   u    i    o
-   j    k    l
-   m    ,    .
+Mover o robo:
+        w / seta cima
+   a / seta esq.   d / seta dir.
+        s / seta baixo
 
-For non-Vim users:
-   w/s: up/down
-   a/d: left/right
+r : reinicia o mapa atual
+n : carrega um novo mapa aleatorio
 
-r : reset the current board
-n : start a new random board
-
-q/z : increase/decrease max speeds by 10%
-anything else : stop
-
-CTRL-C to quit
+CTRL-C para sair
 """
 
 class TeleopKeyboard(Node):
@@ -56,6 +49,11 @@ class TeleopKeyboard(Node):
 def get_key(settings):
     tty.setraw(sys.stdin.fileno())
     key = sys.stdin.read(1)
+    # As setas nao mandam 1 caractere, mandam 3: ESC + '[' + letra
+    # (ex.: seta para cima = '\x1b[A'). Se o primeiro for ESC,
+    # lemos os outros 2 para montar a sequencia completa.
+    if key == '\x1b':
+        key += sys.stdin.read(2)
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
     return key
 
@@ -68,13 +66,13 @@ def main(args=None):
     while rclpy.ok():
         key = get_key(settings)
         direction = None
-        if key in ['w', 'k', '\x1b[A']:  # w, k, up arrow
+        if key in ['w', 'W', '\x1b[A']:  # w ou seta para cima
             direction = 'up'
-        elif key in ['s', 'j', '\x1b[B']:  # s, j, down arrow
+        elif key in ['s', 'S', '\x1b[B']:  # s ou seta para baixo
             direction = 'down'
-        elif key in ['a', 'h', '\x1b[D']:  # a, h, left arrow
+        elif key in ['a', 'A', '\x1b[D']:  # a ou seta para esquerda
             direction = 'left'
-        elif key in ['d', 'l', '\x1b[C']:  # d, l, right arrow
+        elif key in ['d', 'D', '\x1b[C']:  # d ou seta para direita
             direction = 'right'
         elif key == 'r':
             response = teleop_node.send_reset_request(is_random=False)
