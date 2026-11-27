@@ -309,41 +309,6 @@ Também não é preciso reiniciar o jogo para o robô ir até o alvo: ao fim da 
 
 ---
 
-## Devlog: como o projeto evoluiu
-
-### 21/11: preparação
-- **Ambiente conferido:** Ubuntu 24.04 com ROS 2 Jazzy e `colcon` instalados. Faltava o `pygame`, que o jogo usa para desenhar a janela; ele foi instalado com `apt`.
-- **Workspace montado:** os pacotes do professor (`cg`, `cg_interfaces`, `cg_teleop`) e a pasta de imagens foram copiados para este repositório e compilados com `colcon build`. Jogo, serviços e sensores testados.
-- 🐛 **Teleop com teclas estranhas:** o menu mostrava `u i o j k l m , .` e as setas não funcionavam. Causa: cada seta do teclado envia **3 caracteres**, e o programa lia só 1; o menu tinha sido copiado de outro programa. Consertado e traduzido.
-- **Pacote `cg_solver` criado**, com um nó de teste (`ola`) para confirmar que tudo estava ligado.
-
-### 21/11: Parte 1
-- **Mapa recebido:** o nó pede o mapa e remonta a lista achatada em linhas e colunas. O desenho no terminal bateu com o arquivo `1.csv`.
-- **BFS implementado** e testado nos 11 mapas, **sem o jogo**: todas as rotas são válidas (começam no robô, terminam no alvo, andam 1 casa por vez e nunca atravessam parede).
-- **Robô andando:** a rota vira comandos e o robô chega ao alvo em 102 movimentos, conferindo cada passo.
-- 🐛 **O reset "mentia":** depois de pedir `/reset`, o mapa ainda vinha sem o alvo. Descobrimos que o jogo só **agenda** o reset e o aplica um instante depois. Solução: pedir o mapa de novo até o alvo reaparecer.
-- 🐛 **Robô lento nos testes:** cada passo levava até 1 segundo. Em vez de adivinhar, **medimos**: o problema só acontecia rodando o jogo **sem janela** (modo de teste). Com a janela aberta, cada passo leva ~4 milésimos de segundo. Decisão: não mexer no jogo do professor.
-
-### 21/11: Parte 2
-- **Sensores:** o nó passou a ouvir o tópico dos sensores. Detalhe crucial: é preciso usar **a mesma configuração de entrega (QoS)** do jogo; com a configuração padrão, nenhuma mensagem chega, e sem aviso de erro. Medido: ~100 leituras por segundo.
-- **Exploração com DFS:** o robô descobre a própria posição "esbarrando" numa parede, explora tudo sem pisar no alvo e espera leituras novas a cada passo. Resultado: **mapa 100% igual ao real** na primeira execução, em 780 movimentos.
-- **Comprovação:** a Parte 2 roda o mesmo BFS no mapa construído e compara com a Parte 1: **102 = 102**, com as mesmas direções.
-- Primeira versão deste README.
-
-### 27/11: documentação visual
-- A Parte 2 passou a salvar o **trajeto completo** da exploração (`resultados/parte2_exploracao.json`).
-- Criado `docs/gerar_imagens.py`, que desenha as imagens deste README (ondas do BFS, progresso da exploração, animação e comparação) **a partir dos resultados reais**, com as mesmas cores do jogo.
-- Prints reais da janela do jogo capturados durante uma execução.
-- README ampliado com imagens, explicações e este devlog.
-
-### Lições aprendidas
-- **Medir antes de concluir:** a lentidão parecia culpa do nosso código, mas as medições mostraram que vinha do modo de teste sem janela.
-- **"Respondeu ok" não é "já terminou":** o reset do jogo mostrou que é preciso conferir o estado, não só a resposta.
-- **Conferir cada passo** (posição real × posição esperada) evitou que o robô se perdesse sem perceber.
-- **Separar a lógica da comunicação:** o BFS não depende do ROS, então foi testado sozinho e reaproveitado nas duas partes sem mudar nada.
-
----
-
 ## O que veio pronto e o que foi feito
 
 - **Do professor (sem alterações):** os pacotes `cg` (jogo), `cg_interfaces` (comunicação) e a pasta `lobotomy_kaisen` (imagens), copiados de [rmnicola/culling_games](https://github.com/rmnicola/culling_games).
