@@ -28,7 +28,7 @@ from cg_interfaces.srv import MoveCmd
 from cg_solver.labirinto import desenhar, dicionario_para_matriz
 from cg_solver.bfs import DIRECOES, bfs, marcar_caminho, caminho_para_direcoes
 from cg_solver.arquivos import (salvar_mapa_csv, carregar_mapa_csv,
-                                salvar_rota, carregar_rota)
+                                salvar_rota, carregar_rota, salvar_exploracao)
 
 # Cada campo da mensagem do sensor e a posição RELATIVA da célula que ele
 # descreve: (variação na linha, variação na coluna) em relação ao robô.
@@ -80,6 +80,7 @@ class Parte2(Node):
         self.mapa = {}
         self.alvo = None         # posição do alvo, quando os sensores o virem
         self.num_movimentos = 0  # estatística: quantos passos a exploração deu
+        self.trajetoria = []     # todas as casas por onde o robô passou, em ordem
 
     # ------------------------------------------------------------------
     # Sensores
@@ -146,6 +147,7 @@ class Parte2(Node):
                 f'tecla r no teleop ou: ros2 service call /reset '
                 f'cg_interfaces/srv/Reset "{{is_random: false}}"')
         self.num_movimentos += 1
+        self.trajetoria.append(posicao)
 
         # Leitura nova + conferência: se acabei de andar para 'down', a
         # célula de onde vim ('up') tem que estar livre, não pode ser parede.
@@ -196,6 +198,7 @@ class Parte2(Node):
         inicio = self.descobrir_posicao_inicial(leitura)
         self.get_logger().info(f'Posição inicial do robô: {inicio}')
         self.anotar(inicio, leitura)
+        self.trajetoria.append(inicio)
 
         visitados = {inicio}
         pilha = [inicio]
@@ -319,6 +322,8 @@ def main(args=None):
         print('Mapa construído pelo robô (R = partida, T = alvo, · = desconhecido):')
         print(desenhar(mapa))
         arq_mapa = salvar_mapa_csv('parte2_mapa_construido.csv', mapa)
+        # Trajeto da exploração (usado só para gerar as imagens do README)
+        salvar_exploracao('parte2_exploracao.json', no.trajetoria, no.alvo)
         no.get_logger().info(f'Mapa construído salvo em {arq_mapa}')
 
         if no.alvo is None:

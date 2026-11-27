@@ -56,3 +56,20 @@ def carregar_rota(nome):
         return None
     with open(arquivo) as f:
         return json.load(f)
+
+
+def salvar_exploracao(nome, trajetoria, alvo):
+    """Salva o trajeto da exploração da Parte 2 (casas na ordem visitada).
+
+    Não é usado pelo robô; serve para desenhar a exploração passo a passo
+    (imagens e GIF do README, gerados por docs/gerar_imagens.py).
+    """
+    dados = {
+        'movimentos': len(trajetoria) - 1,
+        'alvo': list(alvo) if alvo else None,
+        'trajetoria': [list(p) for p in trajetoria],
+    }
+    arquivo = caminho_arquivo(nome)
+    with open(arquivo, 'w') as f:
+        json.dump(dados, f)
+    return arquivo
